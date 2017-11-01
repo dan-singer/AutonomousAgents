@@ -36,7 +36,7 @@ public class ExerciseManager : MonoBehaviour {
             humans[i].GetComponent<Human>().fleeTarget = zombie;
             humans[i].GetComponent<Human>().seekTarget = target;
         }
-        
+        zombie.GetComponent<Zombie>().seekTarget = humans[0];
 
         targetRad = target.GetComponent<MeshRenderer>().bounds.extents.magnitude;
         humanRad  = humanPrefab.GetComponent<MeshRenderer>().bounds.extents.magnitude;
