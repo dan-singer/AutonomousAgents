@@ -3,17 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Vehicle : MonoBehaviour {
-
-    public enum ForceType
-    {
-        Seeking,
-        Fleeing
-    }
+public abstract class Vehicle : MonoBehaviour {
 
     //Vectors for force-based movement
-    public Vector3 acceleration, velocity, vehiclePosition;
-    public Vector3 direction;
+    public Vector3 Acceleration { get; private set; }
+    public Vector3 Velocity { get; private set; }
+    public Vector3 Direction { get; private set; }
 
     private const float NORMAL_FORCE_MAGNITUDE = 1;
 
@@ -23,33 +18,8 @@ public class Vehicle : MonoBehaviour {
     public float maxForce;
     public float radius;
 
-    public bool bounce = true;
-
-    private ForceType curForceType;
-    public ForceType CurForceType
-    {
-        get
-        {
-            return curForceType;
-        }
-        set
-        {
-            curForceType = value;
-            if (ForceTypeChanged != null)
-                ForceTypeChanged(curForceType);
-        }
-    }
-    public Transform target;
-
-    //Events
-    public event Action<ForceType> ForceTypeChanged;
-
-    private SpriteRenderer spriteRenderer;
-
     // Use this for initialization
-    void Start () {
-        vehiclePosition = transform.position;
-        spriteRenderer = GetComponent<SpriteRenderer>();
+    protected virtual void Start () {
     }
 
     /// <summary>
@@ -58,16 +28,15 @@ public class Vehicle : MonoBehaviour {
     /// <param name="force">Force to apply</param>
     public void ApplyForce(Vector3 force)
     {
-        force.z = 0;
-        acceleration += (force / mass);
+        Acceleration += (force / mass);
     }
 
     /// <summary>
     /// Apply a friction force 
     /// </summary>
-    public void ApplyFriction(float frictionCoeff)
+    protected void ApplyFriction(float frictionCoeff)
     {
-        Vector3 friction = frictionCoeff * NORMAL_FORCE_MAGNITUDE * -velocity.normalized;
+        Vector3 friction = frictionCoeff * NORMAL_FORCE_MAGNITUDE * -Velocity.normalized;
         ApplyForce(friction);
     }
 
@@ -108,14 +77,14 @@ public class Vehicle : MonoBehaviour {
     /// Seek method
     /// </summary>
     /// <returns>Seek force vector</returns>
-    public Vector3 Seek(Vector3 target)
+    protected Vector3 Seek(Vector3 target)
     {
         //Desired vel = target's position - my position
         Vector3 desiredVel = target - transform.position;
         //Scale desired to max speed
         desiredVel = desiredVel.normalized * maxSpeed;
         //Steering force = desired vel - current vel
-        Vector3 steerForce = desiredVel - velocity;
+        Vector3 steerForce = desiredVel - Velocity;
         //return steering force
         return steerForce;
     }
@@ -123,49 +92,45 @@ public class Vehicle : MonoBehaviour {
     /// <summary>
     /// Get a seeking force away from target
     /// </summary>
-    public Vector3 Flee(Vector3 target)
+    protected Vector3 Flee(Vector3 target)
     {
         Vector3 desiredVel = transform.position - target;
         desiredVel = desiredVel.normalized * maxSpeed;
-        return (desiredVel - velocity);
+        return (desiredVel - Velocity);
     }
 
-    private void RotateTowardsDirection()
+    /// <summary>
+    /// Set the GameObject's forward to the current Direction
+    /// </summary>
+    private void SetTransform()
     {
-        float angle = Mathf.Atan2(direction.y, direction.x);
-        transform.rotation = Quaternion.Euler(0, 0, angle * Mathf.Rad2Deg);
+        transform.forward = Direction;
+    }
+
+    /// <summary>
+    /// Calculate the steering forces for this vehicle
+    /// </summary>
+    protected abstract void CalcSteeringForces();
+
+    /// <summary>
+    /// Calculate velocity and then position from the acceleration derived from forces this frame
+    /// </summary>
+    private void UpdatePosition()
+    {
+        //New "movement formula"
+        Velocity += Acceleration * Time.deltaTime;
+        transform.position += Velocity * Time.deltaTime;
+        //Get normalized velocity as direction
+        Direction = Velocity.normalized;
+        //Reset acceleration
+        Acceleration = Vector3.zero;
     }
 
 	// Update is called once per frame
-	void LateUpdate () {
+	protected void LateUpdate () {
 
-        //Update this in case position changed from somewhere else.
-        vehiclePosition = transform.position;
-
-        //if (bounce)
-        //    Bounce();
-
-        switch (CurForceType)
-        {
-            case ForceType.Seeking:
-                ApplyForce(Seek(target.position));
-                break;
-            case ForceType.Fleeing:
-                ApplyForce(Flee(target.position));
-                break;
-            default:
-                break;
-        }
-
-        RotateTowardsDirection();
-
-        //New "movement formula"
-        velocity += acceleration * Time.deltaTime;
-        vehiclePosition += velocity * Time.deltaTime;
-        //Get normalized velocity as direction
-        direction = velocity.normalized;
-        transform.position = vehiclePosition;
-        //Reset acceleration
-        acceleration = Vector3.zero;
+        CalcSteeringForces();
+        UpdatePosition();
+        SetTransform();
 	}
 }
