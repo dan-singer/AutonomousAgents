@@ -127,7 +127,8 @@ public abstract class Vehicle : MonoBehaviour {
     /// </summary>
     private void SetTransform()
     {
-    
+        if (Direction != Vector3.zero)
+            transform.forward = Direction;
     }
 
     /// <summary>
