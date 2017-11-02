@@ -27,7 +27,7 @@ public class DebugLineRenderer : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
+        lines = new List<LineInfo>();
 	}
 	
 	// Update is called once per frame

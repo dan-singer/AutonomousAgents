@@ -9,6 +9,12 @@ public class Zombie : Vehicle
     public float seekWeight;
 
 
+    protected override void DrawDebugLines()
+    {
+        base.DrawDebugLines();
+        debugLineRenderer.DrawLine(2, transform.position, SeekTarget.transform.position);
+    }
+
 
     protected override void CalcSteeringForces()
     {

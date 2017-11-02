@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(DebugLineRenderer))]
 public abstract class Vehicle : MonoBehaviour {
 
     //Vectors for force-based movement
@@ -12,6 +13,8 @@ public abstract class Vehicle : MonoBehaviour {
 
     private const float NORMAL_FORCE_MAGNITUDE = 1;
 
+    protected DebugLineRenderer debugLineRenderer;
+
     //Floats for force-based movement
     public float mass;
     public float maxSpeed;
@@ -20,6 +23,7 @@ public abstract class Vehicle : MonoBehaviour {
 
     // Use this for initialization
     protected virtual void Start () {
+        debugLineRenderer = GetComponent<DebugLineRenderer>();
     }
 
     /// <summary>
@@ -150,11 +154,19 @@ public abstract class Vehicle : MonoBehaviour {
         Acceleration = Vector3.zero;
     }
 
-	// Update is called once per frame
-	protected void LateUpdate () {
+    protected virtual void DrawDebugLines()
+    {
+        debugLineRenderer.DrawLine(0, transform.position, transform.position + transform.forward);
+        debugLineRenderer.DrawLine(1, transform.position, transform.position + transform.right);
+
+    }
+
+    // Update is called once per frame
+    protected void LateUpdate () {
 
         CalcSteeringForces();
         UpdatePosition();
         SetTransform();
+        DrawDebugLines();
 	}
 }
