@@ -23,6 +23,29 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
+    /// Return the closes object of type T to this Vehicle
+    /// </summary>
+    protected T GetNearest<T>() where T:MonoBehaviour
+    {
+        T[] objects = FindObjectsOfType<T>();
+        if (objects.Length == 0)
+            return default(T);
+        T min = objects[0];
+        for (int i = 1; i < objects.Length; i++)
+        {
+            float minDistSqr = (transform.position - min.transform.position).sqrMagnitude;
+            float distSqr = (transform.position - objects[i].transform.position).sqrMagnitude;
+            if (distSqr < minDistSqr)
+            {
+                min = objects[i];
+            }
+        }
+        return min;
+    }
+
+
+
+    /// <summary>
     /// Applies a force to this vehicle's acceleration.
     /// </summary>
     /// <param name="force">Force to apply</param>
@@ -104,7 +127,7 @@ public abstract class Vehicle : MonoBehaviour {
     /// </summary>
     private void SetTransform()
     {
-        transform.forward = Direction;
+    
     }
 
     /// <summary>

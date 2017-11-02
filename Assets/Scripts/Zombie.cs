@@ -5,13 +5,18 @@ using UnityEngine;
 
 public class Zombie : Vehicle
 {
-    public GameObject seekTarget;
+    public GameObject SeekTarget { get; private set; }
     public float seekWeight;
+
+
 
     protected override void CalcSteeringForces()
     {
+        SeekTarget = GetNearest<Human>().gameObject;
+        if (SeekTarget == null)
+            return;
         Vector3 netForce = Vector3.zero;
-        netForce += Seek(seekTarget.transform.position) * seekWeight;
+        netForce += Seek(SeekTarget.transform.position) * seekWeight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }

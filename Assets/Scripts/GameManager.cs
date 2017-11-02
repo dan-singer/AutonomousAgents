@@ -3,18 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Manages Exercise 9: Code Refactoring
+/// Manages the HvZ simulation
 /// </summary>
-public class ExerciseManager : MonoBehaviour {
+/// <author>Dan Singer</author>
+public class GameManager : MonoBehaviour {
+
+    [System.Serializable]
+    public class SpawnInfo
+    {
+        public int Min, Max;
+    }
+
 
     public GameObject humanPrefab;
     public GameObject zombiePrefab;
     public GameObject targetPrefab;
     public MeshRenderer floor;
 
-    public int humansToSpawnMin = 5, humansToSpawnMax = 10;
+    public SpawnInfo humanSpawnInfo;
+    public SpawnInfo zombieSpawnInfo;
 
-    private GameObject[] humans;
     private GameObject zombie;
     private GameObject target;
 
@@ -22,25 +30,27 @@ public class ExerciseManager : MonoBehaviour {
     private float humanRad;
 
 
-	// Use this for initialization
-	void Start () {
-        
+    // Use this for initialization
+    void Start()
+    {
+        SpawnAgents();
+    }
+
+    private void SpawnAgents()
+    {
         zombie = SpawnOnFloor(zombiePrefab);
-        target = SpawnOnFloor(targetPrefab);
 
-        int humanCount = Random.Range(humansToSpawnMin, humansToSpawnMax + 1);
-        humans = new GameObject[humanCount];
-        for (int i=0; i<humanCount; i++)
+        int humanCount = Random.Range(humanSpawnInfo.Min, humanSpawnInfo.Max + 1);
+        for (int i = 0; i < humanCount; i++)
         {
-            humans[i] = SpawnOnFloor(humanPrefab);
-            humans[i].GetComponent<Human>().fleeTarget = zombie;
-            humans[i].GetComponent<Human>().seekTarget = target;
+            GameObject human = SpawnOnFloor(humanPrefab);
         }
-        zombie.GetComponent<Zombie>().seekTarget = humans[0];
-
-        targetRad = target.GetComponent<MeshRenderer>().bounds.extents.magnitude;
-        humanRad  = humanPrefab.GetComponent<MeshRenderer>().bounds.extents.magnitude;
-	}
+        int zombieCount = Random.Range(zombieSpawnInfo.Min, zombieSpawnInfo.Max + 1);
+        for (int i=0; i<zombieCount; i++)
+        {
+            GameObject zombie = SpawnOnFloor(zombiePrefab);
+        }
+    }
 
     /// <summary>
     /// Spawn an instance of original on a random position on the floor
@@ -67,15 +77,7 @@ public class ExerciseManager : MonoBehaviour {
 
 
     // Update is called once per frame
-    void Update () {
-        //Make target move when near a human using a quick bounding sphere check
-		foreach (GameObject human in humans)
-        {
-            float distSqr = (target.transform.position - human.transform.position).sqrMagnitude;
-            if (distSqr < Mathf.Pow(humanRad + targetRad, 2) )
-            {
-                target.transform.position = RandomPosOnFloor(target);
-            }
-        }
-	}
+    void Update()
+    {
+    }
 }
