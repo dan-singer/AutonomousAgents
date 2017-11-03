@@ -1,2 +1,2 @@
 # AutonomousAgents
-Demos on Autonomous Agents
+Exercises on Autonomous Agents
