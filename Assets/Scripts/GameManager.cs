@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour {
 
     public GameObject humanPrefab;
     public GameObject zombiePrefab;
-    public GameObject targetPrefab;
     public MeshRenderer floor;
 
     public SpawnInfo humanSpawnInfo;
