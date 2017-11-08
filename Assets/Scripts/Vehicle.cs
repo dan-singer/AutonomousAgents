@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(DebugLineRenderer))]
+[RequireComponent(typeof(Collider))]
 public abstract class Vehicle : MonoBehaviour {
 
     //Vectors for force-based movement
@@ -13,38 +14,40 @@ public abstract class Vehicle : MonoBehaviour {
 
     private const float NORMAL_FORCE_MAGNITUDE = 1;
 
+    protected Collider coll;
+
+
     protected DebugLineRenderer debugLineRenderer;
 
     //Floats for force-based movement
     public float mass;
     public float maxSpeed;
     public float maxForce;
-    public float radius;
 
     // Use this for initialization
     protected virtual void Start () {
         debugLineRenderer = GetComponent<DebugLineRenderer>();
+        coll = GetComponent<Collider>();
     }
 
     /// <summary>
-    /// Return the closes object of type T to this Vehicle
+    /// Return the closes object of type T to this Vehicle provided a list of objects to search through
     /// </summary>
-    protected T GetNearest<T>() where T:MonoBehaviour
+    protected T GetNearest<T>(List<T> objects) where T : MonoBehaviour
     {
-        T[] objects = FindObjectsOfType<T>();
-        if (objects.Length == 0)
+        if (objects.Count == 0)
             return default(T);
-        T min = objects[0];
-        for (int i = 1; i < objects.Length; i++)
+        T minObj = objects[0];
+        for (int i = 1; i < objects.Count; i++)
         {
-            float minDistSqr = (transform.position - min.transform.position).sqrMagnitude;
+            float minDistSqr = (transform.position - minObj.transform.position).sqrMagnitude;
             float distSqr = (transform.position - objects[i].transform.position).sqrMagnitude;
             if (distSqr < minDistSqr)
             {
-                min = objects[i];
+                minObj = objects[i];
             }
         }
-        return min;
+        return minObj;
     }
 
 
@@ -126,10 +129,35 @@ public abstract class Vehicle : MonoBehaviour {
         return (desiredVel - Velocity);
     }
 
+    protected Vector3 Avoid(GameObject obstacle, float avoidRadius)
+    {
+        //Ignore obstacles behind the vehicle
+        Vector3 obsLocalPos = obstacle.transform.position - transform.position;
+        float fwdProj = Vector3.Dot(transform.forward, obsLocalPos);
+        if (fwdProj < 0)
+            return Vector3.zero;
+
+        //Ignore objects too far away
+        float radSum = coll.Radius + obstacle.GetComponent<Collider>().Radius;
+        if (obsLocalPos.sqrMagnitude > Math.Pow(radSum*2, 2))
+            return Vector3.zero;
+
+        //Test for non-intersection
+        float rightProj = Vector3.Dot(transform.right, obsLocalPos);
+        if (Mathf.Abs(rightProj) > radSum)
+            return Vector3.zero;
+
+        //Now we can avoid the obstacle
+        Vector3 desiredVel = transform.right * -Mathf.Sign(rightProj);
+        desiredVel *= maxSpeed;
+        Vector3 force = desiredVel - Velocity;
+        return force;
+    }
+
     /// <summary>
     /// Set the GameObject's forward to the current Direction
     /// </summary>
-    private void SetTransform()
+    private void SetForward()
     {
         if (Direction != Vector3.zero)
             transform.forward = Direction;
@@ -166,7 +194,7 @@ public abstract class Vehicle : MonoBehaviour {
 
         CalcSteeringForces();
         UpdatePosition();
-        SetTransform();
+        SetForward();
         DrawDebugLines();
 	}
 }

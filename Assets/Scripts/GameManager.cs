@@ -8,26 +8,43 @@ using UnityEngine;
 /// <author>Dan Singer</author>
 public class GameManager : MonoBehaviour {
 
+
+    //Singleton pattern
+    private static GameManager instance;
+    /// <summary>
+    /// Singleton
+    /// </summary>
+    public static GameManager Instance
+    {
+        get
+        {
+            if (instance == null)
+                instance = FindObjectOfType<GameManager>();
+            return instance;
+        }
+    }
+
+
     [System.Serializable]
     public class SpawnInfo
     {
         public int Min, Max;
     }
 
-
     public GameObject humanPrefab;
     public GameObject zombiePrefab;
+    public GameObject obstaclePrefab;
     public MeshRenderer floor;
 
     public SpawnInfo humanSpawnInfo;
     public SpawnInfo zombieSpawnInfo;
+    public SpawnInfo obstacleSpawnInfo;
 
-    private GameObject zombie;
-    private GameObject target;
 
-    private float targetRad;
-    private float humanRad;
-
+    public List<GameObject> AllActors { get; private set; }
+    public List<Human> Humans { get; private set; }
+    public List<Zombie> Zombies { get; private set; }
+    public List<GameObject> Obstacles { get; private set; }
 
     // Use this for initialization
     void Start()
@@ -37,17 +54,25 @@ public class GameManager : MonoBehaviour {
 
     private void SpawnAgents()
     {
-        zombie = SpawnOnFloor(zombiePrefab);
+        AllActors = new List<GameObject>(); Humans = new List<Human>(); Zombies = new List<Zombie>(); Obstacles = new List<GameObject>();
 
         int humanCount = Random.Range(humanSpawnInfo.Min, humanSpawnInfo.Max + 1);
         for (int i = 0; i < humanCount; i++)
         {
             GameObject human = SpawnOnFloor(humanPrefab);
+            Humans.Add(human.GetComponent<Human>());
         }
         int zombieCount = Random.Range(zombieSpawnInfo.Min, zombieSpawnInfo.Max + 1);
         for (int i=0; i<zombieCount; i++)
         {
             GameObject zombie = SpawnOnFloor(zombiePrefab);
+            Zombies.Add(zombie.GetComponent<Zombie>());
+        }
+        int obstacleCount = Random.Range(obstacleSpawnInfo.Min, obstacleSpawnInfo.Max + 1);
+        for (int i=0; i<obstacleCount; i++)
+        {
+            GameObject obstacle = SpawnOnFloor(obstaclePrefab);
+            Obstacles.Add(obstacle);
         }
     }
 
@@ -57,6 +82,7 @@ public class GameManager : MonoBehaviour {
     private GameObject SpawnOnFloor(GameObject original)
     {
         GameObject newGo = Instantiate<GameObject>(original, RandomPosOnFloor(original), Quaternion.identity);
+        AllActors.Add(newGo);
         return newGo;
     }
 
