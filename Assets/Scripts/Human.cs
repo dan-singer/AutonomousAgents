@@ -6,11 +6,12 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Human : Vehicle
 {
-    public float fleeWeight;
+    public float evadeWeight;
     public float avoidWeight = 3;
     public float minZombieDistance = 6;
     public float avoidRadius = 4;
-    public Zombie FleeTarget { get; private set; }
+    public float evadeSecondsAhead = 2;
+    public Vehicle FleeTarget { get; private set; }
 
 
     /// <summary>
@@ -27,7 +28,7 @@ public class Human : Vehicle
         float sqrMag = (transform.position - FleeTarget.transform.position).sqrMagnitude;
         if (sqrMag < Mathf.Pow(minZombieDistance, 2))
         {
-            netForce += Flee(FleeTarget.transform.position) * fleeWeight;
+            netForce += Evade(FleeTarget, evadeSecondsAhead) * evadeWeight;
         }
 
         //Obstacle avoidance

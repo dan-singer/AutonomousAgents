@@ -5,26 +5,27 @@ using UnityEngine;
 
 public class Zombie : Vehicle
 {
-    public GameObject SeekTarget { get; private set; }
-    public float seekWeight;
+    public Vehicle PursueTarget { get; private set; }
+    public float pursueWeight;
     public float avoidWeight = 3;
     public float avoidRadius = 4;
+    public float pursueSecondsAhead = 2;
 
 
     protected override void DrawDebugLines()
     {
         base.DrawDebugLines();
-        debugLineRenderer.DrawLine(2, transform.position, SeekTarget.transform.position);
+        debugLineRenderer.DrawLine(2, transform.position, PursueTarget.transform.position);
     }
 
 
     protected override void CalcSteeringForces()
     {
-        SeekTarget = GetNearest<Human>(GameManager.Instance.Humans).gameObject;
-        if (SeekTarget == null)
+        PursueTarget = GetNearest<Human>(GameManager.Instance.Humans);
+        if (PursueTarget == null)
             return;
         Vector3 netForce = Vector3.zero;
-        netForce += Seek(SeekTarget.transform.position) * seekWeight;
+        netForce += Pursue(PursueTarget, pursueSecondsAhead) * pursueWeight;
 
         //Obstacle avoidance
         foreach (GameObject obstacle in GameManager.Instance.Obstacles)

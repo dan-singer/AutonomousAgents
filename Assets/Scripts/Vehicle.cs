@@ -129,6 +129,32 @@ public abstract class Vehicle : MonoBehaviour {
         return (desiredVel - Velocity);
     }
 
+
+    protected Vector3 Pursue(Vehicle target, float secondsAhead)
+    {
+        Vector3 dest = target.transform.position + (target.Velocity*secondsAhead);
+        return Seek(dest);
+    }
+    protected Vector3 Evade(Vehicle target, float secondsAhead)
+    {
+        Vector3 dest = target.transform.position + (target.Velocity * secondsAhead);
+        //If I'm in between dest and target...
+        float posSqr = transform.position.sqrMagnitude;
+        float targetMagSqr = target.transform.position.sqrMagnitude;
+        float min, max;
+        if (targetMagSqr < dest.sqrMagnitude) {
+            min = targetMagSqr; max = dest.sqrMagnitude;
+        }
+        else{
+            min = dest.sqrMagnitude; max = targetMagSqr;
+        }
+
+        if (posSqr >= min && posSqr <= max)
+            return Flee(target.transform.position);
+        else
+            return Flee(dest);
+    }
+
     protected Vector3 Avoid(GameObject obstacle, float avoidRadius)
     {
         //Ignore obstacles behind the vehicle
