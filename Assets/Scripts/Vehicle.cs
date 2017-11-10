@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(DebugLineRenderer))]
 [RequireComponent(typeof(Collider))]
@@ -149,6 +150,7 @@ public abstract class Vehicle : MonoBehaviour {
             min = dest.sqrMagnitude; max = targetMagSqr;
         }
 
+        //If I'm in-between the target and it's future position, just flee the target so I don't run into it!
         if (posSqr >= min && posSqr <= max)
             return Flee(target.transform.position);
         else
@@ -178,6 +180,31 @@ public abstract class Vehicle : MonoBehaviour {
         desiredVel *= maxSpeed;
         Vector3 force = desiredVel - Velocity;
         return force;
+    }
+
+    /// <summary>
+    /// Return a force causing this vehicle to seek a somewhat random location in front of it.
+    /// </summary>
+    protected Vector3 Wander(float ahead, float radius)
+    {
+        float normalizedAngle = Mathf.PerlinNoise(Time.time, 0);
+        float angle = Mathf.Lerp(-90, 90, normalizedAngle);
+        Vector3 rotatedRadius = transform.forward * radius;
+        rotatedRadius = Quaternion.Euler(0, angle, 0) * rotatedRadius;
+        Vector3 seekPt = transform.position + (transform.forward * (ahead + radius)) + rotatedRadius;
+        return Seek(seekPt);
+    }
+
+    protected Vector3 ConstrainTo(Bounds bounds)
+    {
+        float x = transform.position.x; float z = transform.position.z;
+        Vector3 min = bounds.center - bounds.extents;
+        Vector3 max = bounds.center + bounds.extents;
+        bool outside = x < min.x || x > max.x || z < min.z || z > max.z;
+        if (outside)
+            return Seek(new Vector3(bounds.center.x, transform.position.y, bounds.center.z));
+        else
+            return Vector3.zero;
     }
 
     /// <summary>

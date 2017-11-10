@@ -11,6 +11,8 @@ public class Human : Vehicle
     public float minZombieDistance = 6;
     public float avoidRadius = 4;
     public float evadeSecondsAhead = 2;
+    public float wanderAhead = 3, wanderRadius = 4, wanderWeight = 4;
+    public float constrainWeight = 4;
     public Vehicle FleeTarget { get; private set; }
 
 
@@ -30,12 +32,16 @@ public class Human : Vehicle
         {
             netForce += Evade(FleeTarget, evadeSecondsAhead) * evadeWeight;
         }
-
+        else {
+            netForce += Wander(wanderAhead, wanderRadius) * wanderWeight;
+        }
         //Obstacle avoidance
         foreach (GameObject obstacle in GameManager.Instance.Obstacles)
         {
             netForce += Avoid(obstacle, avoidRadius) * avoidWeight;
         }
+        //Stay in park
+        netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainWeight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }

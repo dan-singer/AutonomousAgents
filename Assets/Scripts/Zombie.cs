@@ -10,6 +10,7 @@ public class Zombie : Vehicle
     public float avoidWeight = 3;
     public float avoidRadius = 4;
     public float pursueSecondsAhead = 2;
+    public float constrainWeight = 4;
 
 
     protected override void DrawDebugLines()
@@ -32,6 +33,8 @@ public class Zombie : Vehicle
         {
             netForce += Avoid(obstacle, avoidRadius) * avoidWeight;
         }
+        //Constrain to bounds
+        netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainWeight;
 
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
