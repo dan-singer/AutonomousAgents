@@ -105,7 +105,7 @@ public abstract class Vehicle : MonoBehaviour {
     //}
 
     /// <summary>
-    /// Seek method
+    /// Get a force causing the vehicle to seek the target
     /// </summary>
     /// <returns>Seek force vector</returns>
     protected Vector3 Seek(Vector3 target)
@@ -130,12 +130,21 @@ public abstract class Vehicle : MonoBehaviour {
         return (desiredVel - Velocity);
     }
 
-
+    /// <summary>
+    /// Get a force to Pursue the target
+    /// </summary>
+    /// <param name="target">Target to pursue</param>
+    /// <param name="secondsAhead">How many seconds in the future to look for where this target will be</param>
     protected Vector3 Pursue(Vehicle target, float secondsAhead)
     {
         Vector3 dest = target.transform.position + (target.Velocity*secondsAhead);
         return Seek(dest);
     }
+    /// <summary>
+    /// Get a force to Evade the target
+    /// </summary>
+    /// <param name="target">Target to evade</param>
+    /// <param name="secondsAhead">How many seconds in the future to look for where this target will be</param>
     protected Vector3 Evade(Vehicle target, float secondsAhead)
     {
         Vector3 dest = target.transform.position + (target.Velocity * secondsAhead);
@@ -157,6 +166,9 @@ public abstract class Vehicle : MonoBehaviour {
             return Flee(dest);
     }
 
+    /// <summary>
+    /// Get a force to avoid the obstacle within the radius of avoidance
+    /// </summary>
     protected Vector3 Avoid(GameObject obstacle, float avoidRadius)
     {
         //Ignore obstacles behind the vehicle
@@ -195,6 +207,9 @@ public abstract class Vehicle : MonoBehaviour {
         return Seek(seekPt);
     }
 
+    /// <summary>
+    /// Get a force to constrain the vehicle to the provided Bounds
+    /// </summary>
     protected Vector3 ConstrainTo(Bounds bounds)
     {
         float x = transform.position.x; float z = transform.position.z;
@@ -205,6 +220,27 @@ public abstract class Vehicle : MonoBehaviour {
             return Seek(new Vector3(bounds.center.x, transform.position.y, bounds.center.z));
         else
             return Vector3.zero;
+    }
+
+    protected Vector3 Separate<T>(List<T> vehicles, float radius) where T:MonoBehaviour
+    {
+        Vector3 netForce = Vector3.zero;
+        float radiusSqr = radius * radius;
+        //Loop through each vehicle
+        foreach (T vehicle in vehicles)
+        {
+            Vector3 vehicleToMe = transform.position - vehicle.transform.position;
+            if (vehicleToMe.sqrMagnitude == 0)
+                continue;
+            //if it's in my radius
+            if (vehicleToMe.sqrMagnitude < radiusSqr)
+            {
+                Vector3 sepForce = vehicleToMe.normalized;
+                float weight = 1 / vehicleToMe.sqrMagnitude;
+                netForce += (sepForce * weight);
+            }
+        }
+        return Seek(transform.position + netForce);
     }
 
     /// <summary>

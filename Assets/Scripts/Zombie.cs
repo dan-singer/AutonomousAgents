@@ -7,11 +7,12 @@ public class Zombie : Vehicle
 {
     public Vehicle PursueTarget { get; private set; }
     public float pursueWeight;
-    public float avoidWeight = 3;
+    public float avoidWeight = 1;
     public float avoidRadius = 4;
     public float pursueSecondsAhead = 2;
-    public float constrainWeight = 4;
-
+    public float constrainWeight = 1;
+    public float separationRadius = 4;
+    public float separationWeight = 0.5f;
 
     protected override void DrawDebugLines()
     {
@@ -36,6 +37,8 @@ public class Zombie : Vehicle
         //Constrain to bounds
         netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainWeight;
 
+        //Separation
+        netForce += Separate<Zombie>(GameManager.Instance.Zombies, separationRadius) * separationWeight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }

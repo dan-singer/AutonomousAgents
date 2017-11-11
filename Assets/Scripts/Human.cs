@@ -13,6 +13,7 @@ public class Human : Vehicle
     public float evadeSecondsAhead = 2;
     public float wanderAhead = 3, wanderRadius = 4, wanderWeight = 4;
     public float constrainWeight = 4;
+    public float separationRadius = 4, separationWeight = 0.5f;
     public Vehicle FleeTarget { get; private set; }
 
 
@@ -42,6 +43,8 @@ public class Human : Vehicle
         }
         //Stay in park
         netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainWeight;
+        //Separation
+        netForce += Separate<Human>(GameManager.Instance.Humans, separationRadius) * separationWeight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }
