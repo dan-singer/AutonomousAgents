@@ -6,14 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Human : Vehicle
 {
-    public float evadeWeight;
-    public float avoidWeight = 3;
     public float minZombieDistance = 6;
-    public float avoidRadius = 4;
-    public float evadeSecondsAhead = 2;
-    public float wanderAhead = 3, wanderRadius = 4, wanderWeight = 4;
-    public float constrainWeight = 4;
-    public float separationRadius = 4, separationWeight = 0.5f;
     public Vehicle FleeTarget { get; private set; }
 
 
@@ -31,20 +24,20 @@ public class Human : Vehicle
         float sqrMag = (transform.position - FleeTarget.transform.position).sqrMagnitude;
         if (sqrMag < Mathf.Pow(minZombieDistance, 2))
         {
-            netForce += Evade(FleeTarget, evadeSecondsAhead) * evadeWeight;
+            netForce += Evade(FleeTarget, evadeInfo.secondsAhead) * evadeInfo.weight;
         }
         else {
-            netForce += Wander(wanderAhead, wanderRadius) * wanderWeight;
+            netForce += Wander(wanderInfo.unitsAhead, wanderInfo.radius) * wanderInfo.weight;
         }
         //Obstacle avoidance
         foreach (GameObject obstacle in GameManager.Instance.Obstacles)
         {
-            netForce += Avoid(obstacle, avoidRadius) * avoidWeight;
+            netForce += Avoid(obstacle, avoidInfo.radius) * avoidInfo.weight;
         }
         //Stay in park
-        netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainWeight;
+        netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainInfo.weight;
         //Separation
-        netForce += Separate<Human>(GameManager.Instance.Humans, separationRadius) * separationWeight;
+        netForce += Separate<Human>(GameManager.Instance.Humans, separationInfo.radius) * separationInfo.weight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }

@@ -25,6 +25,15 @@ public abstract class Vehicle : MonoBehaviour {
     public float maxSpeed;
     public float maxForce;
 
+
+    //Detailed force info
+    public PursueEvadeInfo pursueInfo;
+    public PursueEvadeInfo evadeInfo;
+    public SForceInfo constrainInfo;
+    public SForceRadiusInfo avoidInfo;
+    public SForceRadiusInfo separationInfo;
+    public WanderInfo wanderInfo;
+
     // Use this for initialization
     protected virtual void Start () {
         debugLineRenderer = GetComponent<DebugLineRenderer>();
@@ -279,7 +288,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     // Update is called once per frame
-    protected void LateUpdate () {
+    protected void Update () {
 
         CalcSteeringForces();
         UpdatePosition();

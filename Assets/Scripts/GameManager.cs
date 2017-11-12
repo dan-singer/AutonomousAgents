@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// Manages the HvZ simulation
@@ -46,10 +49,14 @@ public class GameManager : MonoBehaviour {
     public List<Zombie> Zombies { get; private set; }
     public List<GameObject> Obstacles { get; private set; }
 
+
+    private Queue<Action> lateUpdateQueue; 
+
     // Use this for initialization
     void Start()
     {
         SpawnAgents();
+        lateUpdateQueue = new Queue<Action>();
     }
 
     private void SpawnAgents()
@@ -109,7 +116,7 @@ public class GameManager : MonoBehaviour {
         return orig;
     }
 
-    public void RemoveAgent(GameObject agent)
+    private void RemoveAgent(GameObject agent)
     {
         Human h = agent.GetComponent<Human>();
         Zombie z = agent.GetComponent<Zombie>();
@@ -122,7 +129,7 @@ public class GameManager : MonoBehaviour {
         CollisionManager.Instance.UpdateAllColliders();
     }
 
-    public void SpawnAgent<T>(Vector3 loc) where T: Vehicle
+    private void SpawnAgent<T>(Vector3 loc) where T: Vehicle
     {
         if (typeof(T) == typeof(Human))
         {
@@ -131,15 +138,43 @@ public class GameManager : MonoBehaviour {
         }
         else if (typeof(T) == typeof(Zombie))
         {
-            GameObject zombieGO = SpawnOnFloor(humanPrefab, loc); //Note that this will add to AllActors list
+            GameObject zombieGO = SpawnOnFloor(zombiePrefab, loc); //Note that this will add to AllActors list
             Zombies.Add(zombieGO.GetComponent<Zombie>());
         }
         CollisionManager.Instance.UpdateAllColliders();
+    }
 
+    //NOTE: Requests are done like because we must wait for all list iterations from vehicles to be over before modifying the lists!
+
+    /// <summary>
+    /// Request that an agent be spawned in the lateupdate function
+    /// </summary>
+    /// <typeparam name="T">Type to spawn</typeparam>
+    /// <param name="loc">Where to spawn</param>
+    public void RequestAgentSpawn<T>(Vector3 loc) where T: Vehicle
+    {
+        lateUpdateQueue.Enqueue(() => { SpawnAgent<T>(loc); }); 
+    }
+    /// <summary>
+    /// Request that an agent be removed in the lateupdate function
+    /// </summary>
+    /// <param name="agent">Agent to remove</param>
+    public void RequestAgentRemoval(GameObject agent)
+    {
+        lateUpdateQueue.Enqueue(() => { RemoveAgent(agent); });
     }
 
     // Update is called once per frame
     void Update()
     {
+    }
+
+    private void LateUpdate()
+    {
+        while (lateUpdateQueue.Count > 0)
+        {
+            Action action = lateUpdateQueue.Dequeue();
+            action();
+        }
     }
 }
