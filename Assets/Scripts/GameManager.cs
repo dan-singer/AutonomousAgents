@@ -74,14 +74,17 @@ public class GameManager : MonoBehaviour {
             GameObject obstacle = SpawnOnFloor(obstaclePrefab);
             Obstacles.Add(obstacle);
         }
+
+        CollisionManager.Instance.UpdateAllColliders();
     }
 
     /// <summary>
     /// Spawn an instance of original on a random position on the floor
     /// </summary>
-    private GameObject SpawnOnFloor(GameObject original)
+    private GameObject SpawnOnFloor(GameObject original, Vector3? loc = null)
     {
-        GameObject newGo = Instantiate<GameObject>(original, RandomPosOnFloor(original), Quaternion.identity);
+        Vector3 spawnLoc = loc == null ? RandomPosOnFloor(original) : loc.Value;
+        GameObject newGo = Instantiate<GameObject>(original, spawnLoc, Quaternion.identity);
         AllActors.Add(newGo);
         return newGo;
     }
@@ -100,6 +103,40 @@ public class GameManager : MonoBehaviour {
         return spawnLoc;
     }
 
+    private Vector3 SampleHeight(GameObject target, Vector3 orig)
+    {
+        orig.y = floor.bounds.max.y + target.GetComponent<Renderer>().bounds.extents.y;
+        return orig;
+    }
+
+    public void RemoveAgent(GameObject agent)
+    {
+        Human h = agent.GetComponent<Human>();
+        Zombie z = agent.GetComponent<Zombie>();
+        if (h != null)
+            Humans.Remove(h);
+        if (z != null)
+            Zombies.Remove(z);
+        AllActors.Remove(agent);
+        Destroy(agent);
+        CollisionManager.Instance.UpdateAllColliders();
+    }
+
+    public void SpawnAgent<T>(Vector3 loc) where T: Vehicle
+    {
+        if (typeof(T) == typeof(Human))
+        {
+            GameObject humanGO = SpawnOnFloor(humanPrefab, loc); //Note that this will add to AllActors list
+            Humans.Add(humanGO.GetComponent<Human>());
+        }
+        else if (typeof(T) == typeof(Zombie))
+        {
+            GameObject zombieGO = SpawnOnFloor(humanPrefab, loc); //Note that this will add to AllActors list
+            Zombies.Add(zombieGO.GetComponent<Zombie>());
+        }
+        CollisionManager.Instance.UpdateAllColliders();
+
+    }
 
     // Update is called once per frame
     void Update()

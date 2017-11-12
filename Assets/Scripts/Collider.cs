@@ -60,9 +60,10 @@ public class Collider : MonoBehaviour {
     /// </summary>
     void Update() {
 
-        foreach (Collider coll in CollisionManager.AllColliders)
+        foreach (Collider coll in CollisionManager.Instance.AllColliders)
         {
-            bool shouldNotCheck = coll == null || coll == this || CollisionManager.WasCollCheckAlreadyPerformed(this, coll);
+            bool shouldNotCheck = coll == null || coll == this || CollisionManager.Instance.WasCollCheckAlreadyPerformed(this, coll);
+
             if (shouldNotCheck)
                 continue;
 
@@ -74,7 +75,8 @@ public class Collider : MonoBehaviour {
             else
                 collided = BoundingCircle(coll);
 
-            CollisionManager.ReportCollisionCheckThisFrame(this, coll);
+
+            CollisionManager.Instance.ReportCollisionCheckThisFrame(this, coll);
 
             if (collided)
             {

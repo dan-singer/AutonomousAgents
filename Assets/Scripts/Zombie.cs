@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +19,9 @@ public class Zombie : Vehicle
         debugLineRenderer.DrawLine(2, transform.position, PursueTarget.transform.position);
     }
 
-
+    /// <summary>
+    /// Determines and applies steering forces for this zombie.
+    /// </summary>
     protected override void CalcSteeringForces()
     {
         PursueTarget = GetNearest<Human>(GameManager.Instance.Humans);
@@ -41,5 +42,17 @@ public class Zombie : Vehicle
         netForce += Separate<Zombie>(GameManager.Instance.Zombies, separationRadius) * separationWeight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
+    }
+
+    private void CollisionStarted(Object other)
+    {
+        Collider coll = (Collider)other;
+        print("Collision started");
+        if (coll.GetComponent<Human>())
+        {
+            Human human = coll.GetComponent<Human>();
+            GameManager.Instance.RemoveAgent(human.gameObject);
+            GameManager.Instance.SpawnAgent<Zombie>(transform.position);
+        }
     }
 }

@@ -8,25 +8,37 @@ using UnityEngine;
 /// <author>Dan Singer</author>
 public class CollisionManager : MonoBehaviour {
 
+    private static CollisionManager instance;
+    public static CollisionManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<CollisionManager>();
+            }
+            return instance;
+        }
+    }
 
     /// <summary>
-    /// Singleton pattern for all of the colliders
+    /// An array of all the colliders in the scene
     /// </summary>
-    public static Collider[] AllColliders { get; private set; }
+    public Collider[] AllColliders { get; private set; }
 
     /// <summary>
     /// Graph representing collision checks this frame
     /// </summary>
-    public static Dictionary<Collider, HashSet<Collider>> CollisionChecksThisFrame { get; private set; }
+    public Dictionary<Collider, HashSet<Collider>> CollisionChecksThisFrame { get; private set; }
 
 
-    private static bool readyToUpdateColliders = false;
+    private bool readyToUpdateColliders = false;
 
     /// <summary>
     /// Update the list of all the colliders.
     /// Be sure to call this when instanitating or destroying anything.
     /// </summary>
-    public static void UpdateAllColliders()
+    public void UpdateAllColliders()
     {
         readyToUpdateColliders = true;
     }
@@ -35,7 +47,7 @@ public class CollisionManager : MonoBehaviour {
     /// <summary>
     /// Inform the manager that a collision check has occured between object A and B.
     /// </summary>
-    public static void ReportCollisionCheckThisFrame(Collider A, Collider B)
+    public void ReportCollisionCheckThisFrame(Collider A, Collider B)
     {
         if (!CollisionChecksThisFrame.ContainsKey(A))
         {
@@ -61,7 +73,7 @@ public class CollisionManager : MonoBehaviour {
     /// <summary>
     /// Checks to make sure that this pairing of objects has not already been checked this frame.
     /// </summary>
-    public static bool WasCollCheckAlreadyPerformed(Collider A, Collider B)
+    public bool WasCollCheckAlreadyPerformed(Collider A, Collider B)
     {
         bool occured = false;
         if (CollisionChecksThisFrame.ContainsKey(A))
