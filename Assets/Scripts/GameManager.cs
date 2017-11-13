@@ -67,19 +67,19 @@ public class GameManager : MonoBehaviour {
         int humanCount = Random.Range(humanSpawnInfo.Min, humanSpawnInfo.Max + 1);
         for (int i = 0; i < humanCount; i++)
         {
-            GameObject human = SpawnOnFloor(humanPrefab);
+            GameObject human = SpawnOnFloor(humanPrefab, centerPivot:false);
             Humans.Add(human.GetComponent<Human>());
         }
         int zombieCount = Random.Range(zombieSpawnInfo.Min, zombieSpawnInfo.Max + 1);
         for (int i=0; i<zombieCount; i++)
         {
-            GameObject zombie = SpawnOnFloor(zombiePrefab);
+            GameObject zombie = SpawnOnFloor(zombiePrefab, centerPivot:false);
             Zombies.Add(zombie.GetComponent<Zombie>());
         }
         int obstacleCount = Random.Range(obstacleSpawnInfo.Min, obstacleSpawnInfo.Max + 1);
         for (int i=0; i<obstacleCount; i++)
         {
-            GameObject obstacle = SpawnOnFloor(obstaclePrefab);
+            GameObject obstacle = SpawnOnFloor(obstaclePrefab, centerPivot:false);
             Obstacles.Add(obstacle);
         }
 
@@ -89,9 +89,9 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Spawn an instance of original on a random position on the floor
     /// </summary>
-    private GameObject SpawnOnFloor(GameObject original, Vector3? loc = null)
+    private GameObject SpawnOnFloor(GameObject original, Vector3? loc = null, bool centerPivot=true)
     {
-        Vector3 spawnLoc = loc == null ? RandomPosOnFloor(original) : loc.Value;
+        Vector3 spawnLoc = loc == null ? RandomPosOnFloor(original, centerPivot) : loc.Value;
         GameObject newGo = Instantiate<GameObject>(original, spawnLoc, Quaternion.identity);
         AllActors.Add(newGo);
         return newGo;
@@ -100,11 +100,12 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Get a random position on the floor such that the gameobject will be on top of the floor
     /// </summary>
-    private Vector3 RandomPosOnFloor(GameObject original)
+    private Vector3 RandomPosOnFloor(GameObject original, bool centerPivot=true)
     {
+        float y = centerPivot ? floor.bounds.max.y + original.GetComponent<Collider>().renderer.bounds.extents.y : floor.bounds.max.y;
         Vector3 spawnLoc = new Vector3(
             Random.Range(floor.bounds.min.x, floor.bounds.max.x),
-            floor.bounds.max.y + original.GetComponent<Renderer>().bounds.extents.y,
+            y,
             Random.Range(floor.bounds.min.z, floor.bounds.max.z)
         );
 
@@ -113,7 +114,7 @@ public class GameManager : MonoBehaviour {
 
     private Vector3 SampleHeight(GameObject target, Vector3 orig)
     {
-        orig.y = floor.bounds.max.y + target.GetComponent<Renderer>().bounds.extents.y;
+        orig.y = floor.bounds.max.y + target.GetComponent<Collider>().renderer.bounds.extents.y;
         return orig;
     }
 

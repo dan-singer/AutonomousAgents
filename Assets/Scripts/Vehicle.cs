@@ -34,6 +34,9 @@ public abstract class Vehicle : MonoBehaviour {
     public SForceRadiusInfo separationInfo;
     public WanderInfo wanderInfo;
 
+
+    public bool ignoreY = true;
+
     //For wander variation
     protected float wanderOffset;
 
@@ -72,6 +75,8 @@ public abstract class Vehicle : MonoBehaviour {
     /// <param name="force">Force to apply</param>
     public void ApplyForce(Vector3 force)
     {
+        if (ignoreY)
+            force.y = 0;
         Acceleration += (force / mass);
     }
 
@@ -123,6 +128,7 @@ public abstract class Vehicle : MonoBehaviour {
     /// <returns>Seek force vector</returns>
     protected Vector3 Seek(Vector3 target)
     {
+
         //Desired vel = target's position - my position
         Vector3 desiredVel = target - transform.position;
         //Scale desired to max speed
@@ -197,7 +203,7 @@ public abstract class Vehicle : MonoBehaviour {
             return Vector3.zero;
 
         //Ignore objects too far away
-        float radSum = coll.Radius + obstacle.GetComponent<Collider>().Radius;
+        float radSum = coll.Radius + obstacle.GetComponent<Collider>().InnerRadius;
         if (obsLocalPos.sqrMagnitude > Math.Pow(radSum*2, 2))
             return Vector3.zero;
 

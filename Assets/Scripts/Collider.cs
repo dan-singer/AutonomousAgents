@@ -6,7 +6,6 @@ using UnityEngine;
 /// Represents a collider that can be used for collision detection
 /// </summary>
 /// <author>Dan Singer</author>
-[RequireComponent(typeof(Renderer))]
 public class Collider : MonoBehaviour {
 
     public enum Method
@@ -17,7 +16,7 @@ public class Collider : MonoBehaviour {
 
     public Method collisionMethod;
 
-    public Renderer Rend { get; private set; }
+    public Renderer renderer;
 
     private HashSet<Collider> collidingWith;
 
@@ -35,7 +34,7 @@ public class Collider : MonoBehaviour {
     {
         get
         {
-            return Mathf.Max(Rend.bounds.extents.x, Rend.bounds.extents.y, Rend.bounds.extents.z);
+            return Mathf.Max(renderer.bounds.extents.x, renderer.bounds.extents.y, renderer.bounds.extents.z);
         }
     }
     /// <summary>
@@ -45,13 +44,14 @@ public class Collider : MonoBehaviour {
     {
         get
         {
-            return Mathf.Min(Rend.bounds.extents.x, Rend.bounds.extents.y, Rend.bounds.extents.z);
+            return Mathf.Min(renderer.bounds.extents.x, renderer.bounds.extents.y, renderer.bounds.extents.z);
         }
     }
 
     // Use this for initialization
     void Start() {
-        Rend = GetComponent<Renderer>();
+        if (!renderer)
+            renderer = GetComponent<Renderer>();
         collidingWith = new HashSet<Collider>();
     }
 
@@ -120,10 +120,10 @@ public class Collider : MonoBehaviour {
     /// <returns>True if collision, false otherwise</returns>
     private bool AABB(Collider other)
     {
-        bool test = Rend.bounds.max.x > other.Rend.bounds.min.x
-            && Rend.bounds.min.x < other.Rend.bounds.max.x
-            && Rend.bounds.max.y > other.Rend.bounds.min.y
-            && Rend.bounds.min.y < other.Rend.bounds.max.y;
+        bool test = renderer.bounds.max.x > other.renderer.bounds.min.x
+            && renderer.bounds.min.x < other.renderer.bounds.max.x
+            && renderer.bounds.max.y > other.renderer.bounds.min.y
+            && renderer.bounds.min.y < other.renderer.bounds.max.y;
 
         return test;
     }
@@ -134,7 +134,7 @@ public class Collider : MonoBehaviour {
     /// <returns>True if collision, false otherwise</returns>
     private bool BoundingCircle(Collider other)
     {
-        Vector3 line = other.Rend.bounds.center - Rend.bounds.center;
+        Vector3 line = other.renderer.bounds.center - renderer.bounds.center;
         float radSum = Radius + other.Radius;
         bool test = line.sqrMagnitude < Mathf.Pow(radSum, 2);
         return test;
