@@ -37,7 +37,10 @@ public class GameManager : MonoBehaviour {
     public GameObject humanPrefab;
     public GameObject zombiePrefab;
     public GameObject obstaclePrefab;
+    public GameObject controllableHumanPrefab;
     public MeshRenderer floor;
+    public Follow followCam;
+    public Transform worldTarget;
 
     public SpawnInfo humanSpawnInfo;
     public SpawnInfo zombieSpawnInfo;
@@ -48,6 +51,7 @@ public class GameManager : MonoBehaviour {
     public List<Human> Humans { get; private set; }
     public List<Zombie> Zombies { get; private set; }
     public List<GameObject> Obstacles { get; private set; }
+    public ControllableHuman ActiveControllableHuman { get; private set; }
 
 
     private Queue<Action> lateUpdateQueue; 
@@ -56,6 +60,7 @@ public class GameManager : MonoBehaviour {
     void Start()
     {
         SpawnAgents();
+        followCam.target = worldTarget;
         lateUpdateQueue = new Queue<Action>();
         lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = false; });
     }
@@ -98,6 +103,11 @@ public class GameManager : MonoBehaviour {
         CollisionManager.Instance.UpdateAllColliders();
     }
 
+    public void SpawnControllableHuman()
+    {
+        RequestAgentSpawn<ControllableHuman>(Vector3.zero);
+    }
+
     /// <summary>
     /// Spawn an instance of original on a random position on the floor
     /// </summary>
@@ -133,9 +143,15 @@ public class GameManager : MonoBehaviour {
     private void RemoveAgent(GameObject agent)
     {
         Human h = agent.GetComponent<Human>();
+        ControllableHuman ch = agent.GetComponent<ControllableHuman>();
         Zombie z = agent.GetComponent<Zombie>();
         if (h != null)
             Humans.Remove(h);
+        if (ch != null)
+        {
+            ActiveControllableHuman = null;
+            followCam.target = worldTarget;
+        }
         if (z != null)
             Zombies.Remove(z);
         AllActors.Remove(agent);
@@ -145,15 +161,21 @@ public class GameManager : MonoBehaviour {
 
     private void SpawnAgent<T>(Vector3 loc) where T: Vehicle
     {
+        //Note that SpawnOnFloor also adds to AllActors list
         if (typeof(T) == typeof(Human))
         {
-            GameObject humanGO = SpawnOnFloor(humanPrefab, loc); //Note that this will add to AllActors list
+            GameObject humanGO = SpawnOnFloor(humanPrefab, loc); 
             Humans.Add(humanGO.GetComponent<Human>());
         }
         else if (typeof(T) == typeof(Zombie))
         {
-            GameObject zombieGO = SpawnOnFloor(zombiePrefab, loc); //Note that this will add to AllActors list
+            GameObject zombieGO = SpawnOnFloor(zombiePrefab, loc); 
             Zombies.Add(zombieGO.GetComponent<Zombie>());
+        }
+        else if (typeof(T) == typeof(ControllableHuman))
+        {
+            ActiveControllableHuman = SpawnOnFloor(controllableHumanPrefab, centerPivot: false).GetComponent<ControllableHuman>();
+            followCam.target = ActiveControllableHuman.transform;
         }
         CollisionManager.Instance.UpdateAllColliders();
     }

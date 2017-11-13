@@ -43,10 +43,9 @@ public class Zombie : Vehicle
     private void CollisionStarted(Object other)
     {
         Collider coll = (Collider)other;
-        if (coll.GetComponent<Human>())
+        if (coll.GetComponent<Human>() || coll.GetComponent<ControllableHuman>())
         {
-            Human human = coll.GetComponent<Human>();
-            GameManager.Instance.RequestAgentRemoval(human.gameObject);
+            GameManager.Instance.RequestAgentRemoval(coll.gameObject);
             GameManager.Instance.RequestAgentSpawn<Zombie>(transform.position);
         }
     }

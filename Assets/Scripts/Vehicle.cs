@@ -86,7 +86,8 @@ public abstract class Vehicle : MonoBehaviour {
     protected void ApplyFriction(float frictionCoeff)
     {
         Vector3 friction = frictionCoeff * NORMAL_FORCE_MAGNITUDE * -Velocity.normalized;
-        ApplyForce(friction);
+        if (Velocity.sqrMagnitude > Math.Pow(0.01f, 2))
+            ApplyForce(friction);
     }
 
     //public void Bounce()
@@ -304,7 +305,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     // Update is called once per frame
-    protected void Update () {
+    protected virtual void Update () {
 
         CalcSteeringForces();
         UpdatePosition();
