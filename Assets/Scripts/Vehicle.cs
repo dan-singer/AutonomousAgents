@@ -34,10 +34,14 @@ public abstract class Vehicle : MonoBehaviour {
     public SForceRadiusInfo separationInfo;
     public WanderInfo wanderInfo;
 
+    //For wander variation
+    protected float wanderOffset;
+
     // Use this for initialization
     protected virtual void Start () {
         debugLineRenderer = GetComponent<DebugLineRenderer>();
         coll = GetComponent<Collider>();
+        wanderOffset = Random.Range(0, 10.0f);
     }
 
     /// <summary>
@@ -210,9 +214,11 @@ public abstract class Vehicle : MonoBehaviour {
     /// <summary>
     /// Return a force causing this vehicle to seek a somewhat random location in front of it.
     /// </summary>
+    /// <param name="ahead">Distance ahead to project a circle</param>
+    /// <param name="radius">Radius of the projected circle</param>
     protected Vector3 Wander(float ahead, float radius)
     {
-        float normalizedAngle = Mathf.PerlinNoise(Time.time, 0);
+        float normalizedAngle = Mathf.PerlinNoise(Time.time + wanderOffset, 0);
         float angle = Mathf.Lerp(-90, 90, normalizedAngle);
         Vector3 rotatedRadius = transform.forward * radius;
         rotatedRadius = Quaternion.Euler(0, angle, 0) * rotatedRadius;

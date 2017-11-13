@@ -154,7 +154,19 @@ public class GameManager : MonoBehaviour {
     /// <param name="loc">Where to spawn</param>
     public void RequestAgentSpawn<T>(Vector3 loc) where T: Vehicle
     {
-        lateUpdateQueue.Enqueue(() => { SpawnAgent<T>(loc); }); 
+        lateUpdateQueue.Enqueue(() => {
+            SpawnAgent<T>(loc);
+            StartCoroutine(SpawnDelay());
+        }); 
+    }
+    /// <summary>
+    /// Necessary for events to be broadcasted appropriately for new spawn
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator SpawnDelay()
+    {
+        yield return new WaitForSeconds(0.01f);
+        DebugLineRenderer.Draw = DebugLineRenderer.Draw;
     }
     /// <summary>
     /// Request that an agent be removed in the lateupdate function
