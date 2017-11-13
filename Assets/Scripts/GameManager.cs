@@ -60,6 +60,18 @@ public class GameManager : MonoBehaviour {
         lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = false; });
     }
 
+
+    public void RestartSim()
+    {
+        for (int i=AllActors.Count-1; i>=0; i--)
+        {
+            Destroy(AllActors[i]);
+        }
+        SpawnAgents();
+        lateUpdateQueue = new Queue<Action>();
+        lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = DebugLineRenderer.Draw; });
+    }
+
     private void SpawnAgents()
     {
         AllActors = new List<GameObject>(); Humans = new List<Human>(); Zombies = new List<Zombie>(); Obstacles = new List<GameObject>();
@@ -179,7 +191,7 @@ public class GameManager : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.D))
         {
