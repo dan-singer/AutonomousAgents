@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour {
     {
         SpawnAgents();
         lateUpdateQueue = new Queue<Action>();
+        lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = false; });
     }
 
     private void SpawnAgents()
@@ -167,6 +168,10 @@ public class GameManager : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            DebugLineRenderer.Draw = !DebugLineRenderer.Draw;
+        }
     }
 
     private void LateUpdate()

@@ -147,6 +147,8 @@ public abstract class Vehicle : MonoBehaviour {
     protected Vector3 Pursue(Vehicle target, float secondsAhead)
     {
         Vector3 dest = target.transform.position + (target.Velocity*secondsAhead);
+        //Debug
+        debugLineRenderer.SetShapeLocation(transform.position + (dest - transform.position).normalized * maxSpeed);
         return Seek(dest);
     }
     /// <summary>
@@ -169,10 +171,14 @@ public abstract class Vehicle : MonoBehaviour {
         }
 
         //If I'm in-between the target and it's future position, just flee the target so I don't run into it!
+        Vector3 fleeLoc;
         if (posSqr >= min && posSqr <= max)
-            return Flee(target.transform.position);
+            fleeLoc = target.transform.position;
         else
-            return Flee(dest);
+            fleeLoc = dest;
+
+        debugLineRenderer.SetShapeLocation(transform.position + (transform.position - dest).normalized * maxSpeed);
+        return Flee(fleeLoc);
     }
 
     /// <summary>
@@ -198,9 +204,7 @@ public abstract class Vehicle : MonoBehaviour {
 
         //Now we can avoid the obstacle
         Vector3 desiredVel = transform.right * -Mathf.Sign(rightProj);
-        desiredVel *= maxSpeed;
-        Vector3 force = desiredVel - Velocity;
-        return force;
+        return Seek(transform.position + desiredVel);
     }
 
     /// <summary>
