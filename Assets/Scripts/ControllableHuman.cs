@@ -13,10 +13,12 @@ public class ControllableHuman : Vehicle {
     private Vector3 fwd;
     private Vector3 right;
 
+    public float invincibilityDuration = 1;
+
     private Animator animator;
     protected override void CalcSteeringForces()
     {
-        
+        //Nothing to do here
     }
 
     // Use this for initialization
@@ -25,17 +27,29 @@ public class ControllableHuman : Vehicle {
         base.Start();
         animator = GetComponent<Animator>();
 	}
-	
-	// Update is called once per frame
-	protected override void Update ()
+
+
+    public void ToggleCollider()
     {
+        StartCoroutine(ToggleColliderIE());
+    }
 
+    private IEnumerator ToggleColliderIE()
+    {
+        if (coll == null) coll = GetComponent<Collider>();
+        coll.enabled = false;
+        CollisionManager.Instance.UpdateAllColliders();
+        yield return new WaitForSeconds(invincibilityDuration);
+        coll.enabled = true;
+        CollisionManager.Instance.UpdateAllColliders();
 
+    }
+
+    // Update is called once per frame
+    protected override void Update ()
+    {
         float horz = Input.GetAxis("Horizontal");
         float vert = Input.GetAxis("Vertical");
-
-
-
         //NOTE: these following statements seem odd, but they're valid.
 
         //If I'm pressing down and I wasn't before, cache the fwd vector so I don't keep flipping directions

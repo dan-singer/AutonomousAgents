@@ -38,7 +38,7 @@ public class Zombie : Vehicle
         netForce += Separate<Zombie>(GameManager.Instance.Zombies, separationInfo.radius) * separationInfo.weight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
-    }
+    }   
 
     private void CollisionStarted(Object other)
     {

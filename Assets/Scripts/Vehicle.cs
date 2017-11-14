@@ -90,39 +90,6 @@ public abstract class Vehicle : MonoBehaviour {
             ApplyForce(friction);
     }
 
-    //public void Bounce()
-    //{
-    //    Vector3 normalDirection = Vector3.zero;
-    //    float significantMagnitude = 0;
-    //    if (vehiclePosition.x > AgentManager.MaxScreenPt.x - spriteRenderer.bounds.extents.x)
-    //    {
-    //        normalDirection = -Vector3.right;
-    //        significantMagnitude = velocity.x;
-    //    }
-    //    if (vehiclePosition.x < AgentManager.MinScreenPt.x + spriteRenderer.bounds.extents.x)
-    //    {
-    //        normalDirection = Vector3.right;
-    //        significantMagnitude = velocity.x;
-
-    //    }
-    //    if (vehiclePosition.y > AgentManager.MaxScreenPt.y - spriteRenderer.bounds.extents.y)
-    //    {
-    //        normalDirection = -Vector3.up;
-    //        significantMagnitude = velocity.y;
-    //    }
-    //    if (vehiclePosition.y < AgentManager.MinScreenPt.y + spriteRenderer.bounds.extents.y)
-    //    {
-    //        normalDirection = Vector3.up;
-    //        significantMagnitude = velocity.y;
-    //    }
-    //    if (normalDirection == Vector3.zero)
-    //        return;
-    //    significantMagnitude = Mathf.Abs(significantMagnitude);
-    //    //We divide by Time.deltaTime so velocity will be it's opposite at the end of the frame.
-    //    ApplyForce(normalDirection * mass * significantMagnitude * 2 / (Time.deltaTime));
-
-    //}
-
     /// <summary>
     /// Get a force causing the vehicle to seek the target
     /// </summary>
@@ -205,7 +172,7 @@ public abstract class Vehicle : MonoBehaviour {
 
         //Ignore objects too far away
         float radSum = coll.Radius + obstacle.GetComponent<Collider>().InnerRadius;
-        if (obsLocalPos.sqrMagnitude > Math.Pow(radSum*2, 2))
+        if (obsLocalPos.sqrMagnitude > Math.Pow(radSum, 2))
             return Vector3.zero;
 
         //Test for non-intersection

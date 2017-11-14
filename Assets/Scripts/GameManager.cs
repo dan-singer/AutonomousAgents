@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -46,6 +46,8 @@ public class GameManager : MonoBehaviour {
     public SpawnInfo zombieSpawnInfo;
     public SpawnInfo obstacleSpawnInfo;
 
+    public Button buttonEnter;
+
 
     public List<GameObject> AllActors { get; private set; }
     public List<Human> Humans { get; private set; }
@@ -59,19 +61,43 @@ public class GameManager : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        SpawnAgents();
         followCam.target = worldTarget;
         lateUpdateQueue = new Queue<Action>();
         lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = false; });
+
+
+        if (buttonEnter)
+            buttonEnter.onClick.AddListener(() => {
+                if (ActiveControllableHuman != null)
+                {
+                    buttonEnter.transform.GetChild(0).GetComponent<Text>().text = "Enter Simulation";
+                    RequestAgentRemoval(ActiveControllableHuman.gameObject);
+                }
+                else
+                {
+                    buttonEnter.transform.GetChild(0).GetComponent<Text>().text = "Exit Simulation";
+                    RequestAgentSpawn<ControllableHuman>(Vector3.zero);
+                }
+            });
+
+
+        SpawnAgents();
+
+
     }
 
 
     public void RestartSim()
     {
+        
         for (int i=AllActors.Count-1; i>=0; i--)
         {
+            if (AllActors[i].GetComponent<ControllableHuman>())
+                continue;
             Destroy(AllActors[i]);
         }
+        if (ActiveControllableHuman)
+            ActiveControllableHuman.ToggleCollider();
         SpawnAgents();
         lateUpdateQueue = new Queue<Action>();
         lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = DebugLineRenderer.Draw; });
@@ -84,34 +110,41 @@ public class GameManager : MonoBehaviour {
         int humanCount = Random.Range(humanSpawnInfo.Min, humanSpawnInfo.Max + 1);
         for (int i = 0; i < humanCount; i++)
         {
-            GameObject human = SpawnOnFloor(humanPrefab, centerPivot:false);
-            Humans.Add(human.GetComponent<Human>());
+            SpawnAgent<Human>(null);
         }
         int zombieCount = Random.Range(zombieSpawnInfo.Min, zombieSpawnInfo.Max + 1);
         for (int i=0; i<zombieCount; i++)
         {
-            GameObject zombie = SpawnOnFloor(zombiePrefab, centerPivot:false);
-            Zombies.Add(zombie.GetComponent<Zombie>());
+            SpawnAgent<Zombie>(null);
         }
         int obstacleCount = Random.Range(obstacleSpawnInfo.Min, obstacleSpawnInfo.Max + 1);
         for (int i=0; i<obstacleCount; i++)
         {
-            GameObject obstacle = SpawnOnFloor(obstaclePrefab, centerPivot:false);
-            Obstacles.Add(obstacle);
+            SpawnObstacle();
         }
 
-        CollisionManager.Instance.UpdateAllColliders();
     }
 
-    public void SpawnControllableHuman()
+    public void SpawnZombie()
     {
-        RequestAgentSpawn<ControllableHuman>(Vector3.zero);
+        RequestAgentSpawn<Zombie>(null);
+    }
+
+    public void SpawnHuman()
+    {
+        RequestAgentSpawn<Human>(null);
+    }
+    public void SpawnObstacle()
+    {
+        GameObject obstacle = SpawnOnFloor(obstaclePrefab, centerPivot: false);
+        Obstacles.Add(obstacle);
+        CollisionManager.Instance.UpdateAllColliders();
     }
 
     /// <summary>
     /// Spawn an instance of original on a random position on the floor
     /// </summary>
-    private GameObject SpawnOnFloor(GameObject original, Vector3? loc = null, bool centerPivot=true)
+    private GameObject SpawnOnFloor(GameObject original, Vector3? loc = null, bool centerPivot=false)
     {
         Vector3 spawnLoc = loc == null ? RandomPosOnFloor(original, centerPivot) : loc.Value;
         GameObject newGo = Instantiate<GameObject>(original, spawnLoc, Quaternion.identity);
@@ -151,6 +184,7 @@ public class GameManager : MonoBehaviour {
         {
             ActiveControllableHuman = null;
             followCam.target = worldTarget;
+            buttonEnter.transform.GetChild(0).GetComponent<Text>().text = "Enter Simulation";
         }
         if (z != null)
             Zombies.Remove(z);
@@ -159,7 +193,7 @@ public class GameManager : MonoBehaviour {
         CollisionManager.Instance.UpdateAllColliders();
     }
 
-    private void SpawnAgent<T>(Vector3 loc) where T: Vehicle
+    private void SpawnAgent<T>(Vector3? loc) where T: Vehicle
     {
         //Note that SpawnOnFloor also adds to AllActors list
         if (typeof(T) == typeof(Human))
@@ -175,6 +209,7 @@ public class GameManager : MonoBehaviour {
         else if (typeof(T) == typeof(ControllableHuman))
         {
             ActiveControllableHuman = SpawnOnFloor(controllableHumanPrefab, centerPivot: false).GetComponent<ControllableHuman>();
+            ActiveControllableHuman.ToggleCollider();
             followCam.target = ActiveControllableHuman.transform;
         }
         CollisionManager.Instance.UpdateAllColliders();
@@ -187,7 +222,7 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     /// <typeparam name="T">Type to spawn</typeparam>
     /// <param name="loc">Where to spawn</param>
-    public void RequestAgentSpawn<T>(Vector3 loc) where T: Vehicle
+    public void RequestAgentSpawn<T>(Vector3? loc) where T: Vehicle
     {
         lateUpdateQueue.Enqueue(() => {
             SpawnAgent<T>(loc);
@@ -215,10 +250,6 @@ public class GameManager : MonoBehaviour {
     // Update is called once per frame
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            DebugLineRenderer.Draw = !DebugLineRenderer.Draw;
-        }
     }
 
     private void LateUpdate()
