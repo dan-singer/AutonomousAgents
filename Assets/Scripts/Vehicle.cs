@@ -37,6 +37,8 @@ public abstract class Vehicle : MonoBehaviour {
 
     public bool ignoreY = true;
 
+    //Note this is OPTIONAL!
+    public CharacterController controller;
 
     //For wander variation
     protected float wanderOffset;
@@ -258,7 +260,10 @@ public abstract class Vehicle : MonoBehaviour {
     {
         //New "movement formula"
         Velocity += Acceleration * Time.deltaTime;
-        transform.position += Velocity * Time.deltaTime;
+        if (controller)
+            controller.Move(Velocity * Time.deltaTime);
+        else
+            transform.position += Velocity * Time.deltaTime;
         //Get normalized velocity as direction
         Direction = Velocity.normalized;
         //Reset acceleration
