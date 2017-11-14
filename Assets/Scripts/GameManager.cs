@@ -47,16 +47,20 @@ public class GameManager : MonoBehaviour {
     public SpawnInfo obstacleSpawnInfo;
 
     public Button buttonEnter;
-
+    public Text txtInstr;
 
     public List<GameObject> AllActors { get; private set; }
-    public List<Human> Humans { get; private set; }
-    public List<Zombie> Zombies { get; private set; }
+    public List<Vehicle> Humans { get; private set; }
+    public List<Vehicle> Zombies { get; private set; }
     public List<GameObject> Obstacles { get; private set; }
     public ControllableHuman ActiveControllableHuman { get; private set; }
 
+    private const string INSTR_NORMAL = "<b>Click and drag</b> to rotate camera";
+    private const string INSTR_CONTROLLABLE = "<b>W A S D</b> to move";
 
-    private Queue<Action> lateUpdateQueue; 
+
+
+    private Queue<Action> lateUpdateQueue;
 
     // Use this for initialization
     void Start()
@@ -64,7 +68,7 @@ public class GameManager : MonoBehaviour {
         followCam.target = worldTarget;
         lateUpdateQueue = new Queue<Action>();
         lateUpdateQueue.Enqueue(() => { DebugLineRenderer.Draw = false; });
-
+        txtInstr.text = INSTR_NORMAL;
 
         if (buttonEnter)
             buttonEnter.onClick.AddListener(() => {
@@ -89,8 +93,8 @@ public class GameManager : MonoBehaviour {
 
     public void RestartSim()
     {
-        
-        for (int i=AllActors.Count-1; i>=0; i--)
+
+        for (int i = AllActors.Count - 1; i >= 0; i--)
         {
             if (AllActors[i].GetComponent<ControllableHuman>())
                 continue;
@@ -105,7 +109,7 @@ public class GameManager : MonoBehaviour {
 
     private void SpawnAgents()
     {
-        AllActors = new List<GameObject>(); Humans = new List<Human>(); Zombies = new List<Zombie>(); Obstacles = new List<GameObject>();
+        AllActors = new List<GameObject>(); Humans = new List<Vehicle>(); Zombies = new List<Vehicle>(); Obstacles = new List<GameObject>();
 
         int humanCount = Random.Range(humanSpawnInfo.Min, humanSpawnInfo.Max + 1);
         for (int i = 0; i < humanCount; i++)
@@ -113,12 +117,12 @@ public class GameManager : MonoBehaviour {
             SpawnAgent<Human>(null);
         }
         int zombieCount = Random.Range(zombieSpawnInfo.Min, zombieSpawnInfo.Max + 1);
-        for (int i=0; i<zombieCount; i++)
+        for (int i = 0; i < zombieCount; i++)
         {
             SpawnAgent<Zombie>(null);
         }
         int obstacleCount = Random.Range(obstacleSpawnInfo.Min, obstacleSpawnInfo.Max + 1);
-        for (int i=0; i<obstacleCount; i++)
+        for (int i = 0; i < obstacleCount; i++)
         {
             SpawnObstacle();
         }
@@ -129,10 +133,13 @@ public class GameManager : MonoBehaviour {
     {
         RequestAgentSpawn<Zombie>(null);
     }
-
     public void SpawnHuman()
     {
         RequestAgentSpawn<Human>(null);
+    }
+    public void ToggleDebugLines()
+    {
+        DebugLineRenderer.Draw = !DebugLineRenderer.Draw;
     }
     public void SpawnObstacle()
     {
@@ -183,8 +190,11 @@ public class GameManager : MonoBehaviour {
         if (ch != null)
         {
             ActiveControllableHuman = null;
+            Humans.Remove(ch); //It was stored here so zombies can track it, so we can remove it now
+            worldTarget.GetComponent<MouseRotater>().enabled = true;
             followCam.target = worldTarget;
             buttonEnter.transform.GetChild(0).GetComponent<Text>().text = "Enter Simulation";
+            txtInstr.text = INSTR_NORMAL;
         }
         if (z != null)
             Zombies.Remove(z);
@@ -209,8 +219,11 @@ public class GameManager : MonoBehaviour {
         else if (typeof(T) == typeof(ControllableHuman))
         {
             ActiveControllableHuman = SpawnOnFloor(controllableHumanPrefab, centerPivot: false).GetComponent<ControllableHuman>();
+            Humans.Add(ActiveControllableHuman); //Also add to Humans list so it can be targeted
+            worldTarget.GetComponent<MouseRotater>().enabled = false;
             ActiveControllableHuman.ToggleCollider();
             followCam.target = ActiveControllableHuman.transform;
+            txtInstr.text = INSTR_CONTROLLABLE;
         }
         CollisionManager.Instance.UpdateAllColliders();
     }

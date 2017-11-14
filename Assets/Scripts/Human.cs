@@ -18,7 +18,7 @@ public class Human : Vehicle
         Vector3 netForce = Vector3.zero;
         Vector3 flee = Vector3.zero;
 
-        FleeTarget = GetNearest<Zombie>(GameManager.Instance.Zombies);
+        FleeTarget = GetNearest(GameManager.Instance.Zombies);
 
         //Only flee when closer than minZombieDistance
         float sqrMag = (transform.position - FleeTarget.transform.position).sqrMagnitude;
@@ -37,7 +37,7 @@ public class Human : Vehicle
         //Stay in park
         netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainInfo.weight;
         //Separation
-        netForce += Separate<Human>(GameManager.Instance.Humans, separationInfo.radius) * separationInfo.weight;
+        netForce += Separate(GameManager.Instance.Humans, separationInfo.radius) * separationInfo.weight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }

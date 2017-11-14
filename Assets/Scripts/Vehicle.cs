@@ -37,6 +37,7 @@ public abstract class Vehicle : MonoBehaviour {
 
     public bool ignoreY = true;
 
+
     //For wander variation
     protected float wanderOffset;
 

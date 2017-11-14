@@ -20,7 +20,7 @@ public class Zombie : Vehicle
     {
         Vector3 netForce = Vector3.zero;
 
-        PursueTarget = GetNearest<Human>(GameManager.Instance.Humans);
+        PursueTarget = GetNearest(GameManager.Instance.Humans);
         if (PursueTarget != null)
             netForce += Pursue(PursueTarget, pursueInfo.secondsAhead) * pursueInfo.weight;
         else
@@ -35,7 +35,7 @@ public class Zombie : Vehicle
         netForce += ConstrainTo(GameManager.Instance.floor.bounds) * constrainInfo.weight;
 
         //Separation
-        netForce += Separate<Zombie>(GameManager.Instance.Zombies, separationInfo.radius) * separationInfo.weight;
+        netForce += Separate(GameManager.Instance.Zombies, separationInfo.radius) * separationInfo.weight;
         netForce = Vector3.ClampMagnitude(netForce, maxForce);
         ApplyForce(netForce);
     }   
