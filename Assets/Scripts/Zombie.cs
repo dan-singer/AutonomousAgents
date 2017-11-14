@@ -9,8 +9,9 @@ public class Zombie : Vehicle
     protected override void DrawDebugLines()
     {
         base.DrawDebugLines();
+        Vector3 yOff = new Vector3(0, 1, 0);
         if (PursueTarget != null)
-            debugLineRenderer.DrawLine(2, transform.position, PursueTarget.transform.position);
+            debugLineRenderer.DrawLine(2, transform.position + yOff, PursueTarget.transform.position + yOff);
     }
 
     /// <summary>

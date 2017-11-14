@@ -20,6 +20,10 @@ public class ControllableHuman : Vehicle {
     {
         //Nothing to do here
     }
+    protected override void DrawDebugLines()
+    {
+        //Nothing to do here
+    }
 
     // Use this for initialization
     protected override void Start ()
