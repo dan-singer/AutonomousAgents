@@ -108,6 +108,8 @@ public class Collider : MonoBehaviour {
     /// <param name="other">Other collider we collided with.</param>
     private void BroadcastCollisionMessage(string msg, Collider other)
     {
+        if (!other.enabled)
+            return;
         BroadcastMessage(msg, other, SendMessageOptions.DontRequireReceiver);
         other.BroadcastMessage(msg, this, SendMessageOptions.DontRequireReceiver);
 
