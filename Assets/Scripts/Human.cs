@@ -15,6 +15,16 @@ public class Human : Vehicle
 
 
     /// <summary>
+    /// Also draw human's future position.
+    /// </summary>
+    protected override void DrawDebugLines()
+    {
+        base.DrawDebugLines();
+        //Draw future position
+        debugLineRenderer.SetShapeLocation(transform.position + Velocity * evadeInfo.secondsAhead);
+    }
+
+    /// <summary>
     /// Apply steering forces to this human.
     /// </summary>
     protected override void CalcSteeringForces()

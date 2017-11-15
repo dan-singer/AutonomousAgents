@@ -143,9 +143,6 @@ public abstract class Vehicle : MonoBehaviour {
             seekLoc = target.transform.position;
         else
             seekLoc = dest;
-
-        //Debug
-        debugLineRenderer.SetShapeLocation(transform.position + (seekLoc - transform.position).normalized * maxSpeed);
         return Seek(dest);
     }
     /// <summary>
@@ -174,7 +171,6 @@ public abstract class Vehicle : MonoBehaviour {
         else
             fleeLoc = dest;
         //Debug
-        debugLineRenderer.SetShapeLocation(transform.position + (transform.position - fleeLoc).normalized * maxSpeed);
         return Flee(fleeLoc);
     }
 

@@ -10,7 +10,7 @@ public class Zombie : Vehicle
     public Vehicle PursueTarget { get; private set; }
 
     /// <summary>
-    /// Draw an additional debug line of the human this zombie is pursuing.
+    /// Draw an additional debug line of the human this zombie is pursuing, and this zombie's future position.
     /// </summary>
     protected override void DrawDebugLines()
     {
@@ -19,6 +19,8 @@ public class Zombie : Vehicle
         Vector3 yOff = new Vector3(0, 1, 0);
         if (PursueTarget != null)
             debugLineRenderer.DrawLine(2, transform.position + yOff, PursueTarget.transform.position + yOff);
+        //Draw future position
+        debugLineRenderer.SetShapeLocation(transform.position + Velocity * pursueInfo.secondsAhead);
     }
 
     /// <summary>
