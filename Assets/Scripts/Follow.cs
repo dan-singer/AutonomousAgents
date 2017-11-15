@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Component which causes this gameobject to follow the target
+/// Component which causes this gameobject to follow the target.
 /// </summary>
 /// <author>Dan Singer</author>
 public class Follow : MonoBehaviour {
@@ -12,12 +12,9 @@ public class Follow : MonoBehaviour {
     public Vector3 localOffset;
     public float smooth = 2;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-
-    // Update is called once per frame
+    /// <summary>
+    /// Contains logic to make camera smoothly follow and rotate in the direction of target.
+    /// </summary>
     void LateUpdate()
     {
         if (!target)

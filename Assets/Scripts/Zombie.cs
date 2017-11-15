@@ -2,13 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Handles and applies steering forces to this GameObject based on the model of a zombie pursing humans.
+/// </summary>
 public class Zombie : Vehicle
 {
     public Vehicle PursueTarget { get; private set; }
 
+    /// <summary>
+    /// Draw an additional debug line of the human this zombie is pursuing.
+    /// </summary>
     protected override void DrawDebugLines()
     {
         base.DrawDebugLines();
+        //Raise line so it doesn't become hidden in the terrain.
         Vector3 yOff = new Vector3(0, 1, 0);
         if (PursueTarget != null)
             debugLineRenderer.DrawLine(2, transform.position + yOff, PursueTarget.transform.position + yOff);
@@ -41,13 +48,18 @@ public class Zombie : Vehicle
         ApplyForce(netForce);
     }   
 
+    /// <summary>
+    /// When a collision with a human or controllable human occurs, tell the GameManager to kill it.
+    /// This method is invoked by the custom Collider class.
+    /// </summary>
+    /// <param name="other">Object which has been collided with</param>
     private void CollisionStarted(Object other)
     {
         Collider coll = (Collider)other;
         if (coll.GetComponent<Human>() || coll.GetComponent<ControllableHuman>())
         {
             GameManager.Instance.RequestAgentRemoval(coll.gameObject);
-            GameManager.Instance.RequestAgentSpawn<Zombie>(transform.position);
+            GameManager.Instance.RequestAgentSpawn<Zombie>(coll.transform.position);
         }
     }
 }

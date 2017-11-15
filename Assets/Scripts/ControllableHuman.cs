@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Third person controller which extends the Vehicle class
+/// Third person controller which extends the Vehicle class.
 /// </summary>
+/// <author>Dan Singer</author>
 public class ControllableHuman : Vehicle {
 
     private bool wasPressingBack = false;
@@ -16,46 +17,15 @@ public class ControllableHuman : Vehicle {
     public float invincibilityDuration = 1;
 
     private Animator animator;
+    /// <summary>
+    /// Generate and apply forces to steer the human based on player input.
+    /// </summary>
     protected override void CalcSteeringForces()
-    {
-        //Nothing to do here
-    }
-    protected override void DrawDebugLines()
-    {
-        //Nothing to do here
-    }
-
-    // Use this for initialization
-    protected override void Start ()
-    {
-        base.Start();
-        animator = GetComponent<Animator>();
-	}
-
-
-    public void ToggleCollider()
-    {
-        StartCoroutine(ToggleColliderIE());
-    }
-
-    private IEnumerator ToggleColliderIE()
-    {
-        if (coll == null) coll = GetComponent<Collider>();
-        coll.enabled = false;
-        CollisionManager.Instance.UpdateAllColliders();
-        yield return new WaitForSeconds(invincibilityDuration);
-        coll.enabled = true;
-        CollisionManager.Instance.UpdateAllColliders();
-
-    }
-
-    // Update is called once per frame
-    protected override void Update ()
     {
         float horz = Input.GetAxis("Horizontal");
         float vert = Input.GetAxis("Vertical");
-        //NOTE: these following statements seem odd, but they're valid.
 
+        //NOTE: these following statements seem odd, but they're valid.
         //If I'm pressing down and I wasn't before, cache the fwd vector so I don't keep flipping directions
         if (vert < 0 && !wasPressingBack)
             fwd = transform.forward;
@@ -87,6 +57,44 @@ public class ControllableHuman : Vehicle {
 
         wasPressingBack = Input.GetAxis("Vertical") < 0;
         wasMovingHorz = Input.GetAxis("Horizontal") != 0;
-        base.Update();
+    }
+
+    /// <summary>
+    /// The controllable human should not draw debug lines.
+    /// </summary>
+    protected override void DrawDebugLines()
+    {
+    }
+
+    /// <summary>
+    /// Initialize the ControllableHuman.
+    /// </summary>
+    protected override void Start ()
+    {
+        base.Start();
+        animator = GetComponent<Animator>();
 	}
+
+    /// <summary>
+    /// Disable the collider, wait a period of time, then enable the collider.
+    /// </summary>
+    public void ToggleCollider()
+    {
+        StartCoroutine(ToggleColliderIE());
+    }
+
+    /// <summary>
+    /// Handle timing and logic for ToggleCollider method.
+    /// </summary>
+    private IEnumerator ToggleColliderIE()
+    {
+        //Do this in case start was not called yet
+        if (coll == null) coll = GetComponent<Collider>();
+        coll.enabled = false;
+        CollisionManager.Instance.UpdateAllColliders();
+        yield return new WaitForSeconds(invincibilityDuration);
+        coll.enabled = true;
+        CollisionManager.Instance.UpdateAllColliders();
+
+    }
 }

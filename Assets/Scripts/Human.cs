@@ -3,28 +3,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Handles and applies steering forces to this GameObject based on the model of a human fleeing zombies.
+/// </summary>
+/// <author>Dan Singer</author>
 [RequireComponent(typeof(Collider))]
 public class Human : Vehicle
 {
     public float minZombieDistance = 6;
-    public Vehicle FleeTarget { get; private set; }
+    public Vehicle EvadeTarget { get; private set; }
 
 
     /// <summary>
-    /// Make the human seek the seekTarget and flee the fleeTarget if too close
+    /// Apply steering forces to this human.
     /// </summary>
     protected override void CalcSteeringForces()
     {
         Vector3 netForce = Vector3.zero;
         Vector3 flee = Vector3.zero;
 
-        FleeTarget = GetNearest(GameManager.Instance.Zombies);
+        EvadeTarget = GetNearest(GameManager.Instance.Zombies);
 
         //Only flee when closer than minZombieDistance
-        float sqrMag = (transform.position - FleeTarget.transform.position).sqrMagnitude;
+        float sqrMag = (transform.position - EvadeTarget.transform.position).sqrMagnitude;
         if (sqrMag < Mathf.Pow(minZombieDistance, 2))
         {
-            netForce += Evade(FleeTarget, evadeInfo.secondsAhead) * evadeInfo.weight;
+            netForce += Evade(EvadeTarget, evadeInfo.secondsAhead) * evadeInfo.weight;
         }
         else {
             netForce += Wander(wanderInfo.unitsAhead, wanderInfo.radius) * wanderInfo.weight;

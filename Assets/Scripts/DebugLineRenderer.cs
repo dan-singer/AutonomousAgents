@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Component with methods to draw debug lines
+/// Component with methods to draw debug lines in the game view.
 /// </summary>
+/// <author>Dan Singer</author>
 public class DebugLineRenderer : MonoBehaviour {
 
     public Material[] materials;
@@ -16,6 +17,9 @@ public class DebugLineRenderer : MonoBehaviour {
     private static event Action<bool> DrawChanged;
 
     private static bool draw = false;
+    /// <summary>
+    /// Static Draw property, indicating whether ANY debug lines should be drawn.
+    /// </summary>
     public static bool Draw
     {
         get
@@ -30,12 +34,21 @@ public class DebugLineRenderer : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Nested class used to group info about debug lines.
+    /// </summary>
     private class LineInfo
     {
         public Material Material { get; private set; }
         public Vector3 Start { get; private set; }
         public Vector3 End { get; private set; }
 
+        /// <summary>
+        /// Construct a new LineInfo object.
+        /// </summary>
+        /// <param name="mat">Material to use to draw the line</param>
+        /// <param name="start">Starting point</param>
+        /// <param name="end">Ending point</param>
         public LineInfo(Material mat, Vector3 start, Vector3 end)
         {
             Material = mat;
@@ -46,32 +59,44 @@ public class DebugLineRenderer : MonoBehaviour {
 
     private List<LineInfo> lines;
 
-	// Use this for initialization
+	/// <summary>
+    /// Initialize the DebugLineRenderer component.
+    /// </summary>
 	void Start () {
         lines = new List<LineInfo>();
         debugShapeRend = debugShape.GetComponent<Renderer>();
+
+        //Only hide the debugShape when Draw state is changed, no need to set this each frame.
         DrawChanged += (draw) => {
             if (debugShapeRend != null)
                 debugShapeRend.enabled = draw;
         };
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
+    /// <summary>
+    /// Draw a line this frame.
+    /// </summary>
+    /// <param name="matIndex">Index of the material to use. See materials array.</param>
+    /// <param name="start">Starting point of line</param>
+    /// <param name="end">Ending point of line</param>
     public void DrawLine(int matIndex, Vector3 start, Vector3 end)
     {
         lines.Add(new LineInfo(materials[matIndex], start, end));
     }
 
+    /// <summary>
+    /// If a debugShape exists, set its location.
+    /// </summary>
+    /// <param name="loc">Location to use</param>
     public void SetShapeLocation(Vector3 loc)
     {
         if (debugShape)
             debugShape.transform.position = loc;
     }
 
+    /// <summary>
+    /// If Draw is true, render each line in the lines array.
+    /// </summary>
     private void OnRenderObject()
     {
         if (!Draw)

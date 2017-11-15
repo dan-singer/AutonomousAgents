@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+/// <summary>
+/// Base Vehicle class which contains methods to apply traditional forces and seeking forces for autonomous agents. 
+/// Extend this to create a custom agent or player.
+/// </summary>
+/// <author>Dan Singer</author>
 [RequireComponent(typeof(DebugLineRenderer))]
 [RequireComponent(typeof(Collider))]
 public abstract class Vehicle : MonoBehaviour {
@@ -51,7 +56,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Return the closes object of type T to this Vehicle provided a list of objects to search through
+    /// Return the closes object of type T to this Vehicle provided a list of objects to search through.
     /// </summary>
     protected T GetNearest<T>(List<T> objects) where T : MonoBehaviour
     {
@@ -84,7 +89,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Apply a friction force 
+    /// Apply a friction force.
     /// </summary>
     protected void ApplyFriction(float frictionCoeff)
     {
@@ -94,7 +99,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Get a force causing the vehicle to seek the target
+    /// Get a force causing the vehicle to seek the target.
     /// </summary>
     /// <returns>Seek force vector</returns>
     protected Vector3 Seek(Vector3 target)
@@ -111,7 +116,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Get a seeking force away from target
+    /// Get a seeking force away from target.
     /// </summary>
     protected Vector3 Flee(Vector3 target)
     {
@@ -121,19 +126,30 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Get a force to Pursue the target
+    /// Get a force to Pursue the target.
     /// </summary>
     /// <param name="target">Target to pursue</param>
     /// <param name="secondsAhead">How many seconds in the future to look for where this target will be</param>
     protected Vector3 Pursue(Vehicle target, float secondsAhead)
     {
         Vector3 dest = target.transform.position + (target.Velocity*secondsAhead);
+
+        float toTargetSqr = (target.transform.position - transform.position).sqrMagnitude;
+        float targetToDestSqr = (dest - target.transform.position).sqrMagnitude;
+
+        //Just seek the target's position when too close
+        Vector3 seekLoc;
+        if (toTargetSqr < targetToDestSqr)
+            seekLoc = target.transform.position;
+        else
+            seekLoc = dest;
+
         //Debug
-        debugLineRenderer.SetShapeLocation(transform.position + (dest - transform.position).normalized * maxSpeed);
+        debugLineRenderer.SetShapeLocation(transform.position + (seekLoc - transform.position).normalized * maxSpeed);
         return Seek(dest);
     }
     /// <summary>
-    /// Get a force to Evade the target
+    /// Get a force to Evade the target.
     /// </summary>
     /// <param name="target">Target to evade</param>
     /// <param name="secondsAhead">How many seconds in the future to look for where this target will be</param>
@@ -157,13 +173,13 @@ public abstract class Vehicle : MonoBehaviour {
             fleeLoc = target.transform.position;
         else
             fleeLoc = dest;
-
-        debugLineRenderer.SetShapeLocation(transform.position + (transform.position - dest).normalized * maxSpeed);
+        //Debug
+        debugLineRenderer.SetShapeLocation(transform.position + (transform.position - fleeLoc).normalized * maxSpeed);
         return Flee(fleeLoc);
     }
 
     /// <summary>
-    /// Get a force to avoid the obstacle within the radius of avoidance
+    /// Get a force to avoid the obstacle within the radius of avoidance.
     /// </summary>
     protected Vector3 Avoid(GameObject obstacle, float avoidRadius)
     {
@@ -204,7 +220,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Get a force to constrain the vehicle to the provided Bounds
+    /// Get a force to constrain the vehicle to the provided Bounds.
     /// </summary>
     protected Vector3 ConstrainTo(Bounds bounds)
     {
@@ -218,6 +234,12 @@ public abstract class Vehicle : MonoBehaviour {
             return Vector3.zero;
     }
 
+    /// <summary>
+    /// Return a force which causes this object to separate from a list of vehicles.
+    /// </summary>
+    /// <typeparam name="T">Type of object to separate from</typeparam>
+    /// <param name="vehicles">List of objects to separate from</param>
+    /// <param name="radius">Radius around this object in which vehicles should be separated from</param>
     protected Vector3 Separate<T>(List<T> vehicles, float radius) where T:MonoBehaviour
     {
         Vector3 netForce = Vector3.zero;
@@ -240,7 +262,7 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Set the GameObject's forward to the current Direction
+    /// Set the GameObject's forward to the current Direction.
     /// </summary>
     private void SetForward()
     {
@@ -249,12 +271,12 @@ public abstract class Vehicle : MonoBehaviour {
     }
 
     /// <summary>
-    /// Calculate the steering forces for this vehicle
+    /// Calculate the steering forces for this vehicle.
     /// </summary>
     protected abstract void CalcSteeringForces();
 
     /// <summary>
-    /// Calculate velocity and then position from the acceleration derived from forces this frame
+    /// Calculate velocity and then position from the acceleration derived from forces this frame.
     /// </summary>
     private void UpdatePosition()
     {
@@ -270,6 +292,9 @@ public abstract class Vehicle : MonoBehaviour {
         Acceleration = Vector3.zero;
     }
 
+    /// <summary>
+    /// Draw debug lines for this object's forward and right axes in the game view.
+    /// </summary>
     protected virtual void DrawDebugLines()
     {
         debugLineRenderer.DrawLine(0, transform.position, transform.position + transform.forward);
@@ -277,7 +302,9 @@ public abstract class Vehicle : MonoBehaviour {
 
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Calculate steering forces, update the position, rotate towards calculated direction, and draw debug lines.
+    /// </summary>
     protected virtual void Update () {
 
         CalcSteeringForces();

@@ -9,6 +9,9 @@ using UnityEngine;
 public class CollisionManager : MonoBehaviour {
 
     private static CollisionManager instance;
+    /// <summary>
+    /// Singleton pattern.
+    /// </summary>
     public static CollisionManager Instance
     {
         get
@@ -22,12 +25,12 @@ public class CollisionManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// An array of all the colliders in the scene
+    /// An array of all the colliders in the scene.
     /// </summary>
     public Collider[] AllColliders { get; private set; }
 
     /// <summary>
-    /// Graph representing collision checks this frame
+    /// Graph representing collision checks this frame.
     /// </summary>
     public Dictionary<Collider, HashSet<Collider>> CollisionChecksThisFrame { get; private set; }
 
@@ -84,11 +87,17 @@ public class CollisionManager : MonoBehaviour {
         return occured;
     }
 
+    /// <summary>
+    /// Initialize the CollisionManager.
+    /// </summary>
     void Start () {
         AllColliders = Object.FindObjectsOfType<Collider>();
         CollisionChecksThisFrame = new Dictionary<Collider, HashSet<Collider>>();
     }
 	
+    /// <summary>
+    /// Clear each CollisionChecks graph, and update AllColliders array if necessary.
+    /// </summary>
 	void LateUpdate () {
         //Since colliders will be adding to this in the update, we'll use this manager object to clear them after the update
         CollisionChecksThisFrame.Clear();
